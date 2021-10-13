@@ -5,18 +5,17 @@
 
 namespace py = pybind11;
 
-
 namespace onionreq
 {
   void
-  Consensus_Init(py::module &mod);
+  Consensus_Init(py::module& mod);
 
   void
-  OnionMaker_Init(py::module &mod);
+  OnionMaker_Init(py::module& mod);
 
   void
-  Transport_Init(py::module &mod);
+  Transport_Init(py::module& mod);
 
   void
-  Common_Init(py::module & mod);
-}
+  Common_Init(py::module& mod);
+}  // namespace onionreq

@@ -6,7 +6,6 @@
 
 namespace onionreq
 {
-
   /// @brief what protocol the SOGS endpoint speaks
   enum class SOGSProtocol
   {
@@ -23,6 +22,5 @@ namespace onionreq
     uint16_t port;
 
     explicit SOGSInfo(std::string_view url);
-    
   };
-}
+}  // namespace onionreq

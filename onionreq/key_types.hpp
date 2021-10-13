@@ -5,20 +5,23 @@
 
 namespace onionreq
 {
-
   /// @brief public identity key for the .snode address
   using PublicIdentityKey_t = std::array<char, 32>;
+  /// @brief public onion request key for keyexchange
+  using PublicOnionKey_t = std::array<char, 32>;
 
-}
+}  // namespace onionreq
 
 namespace std
 {
-  template <> struct hash<onionreq::PublicIdentityKey_t>
+  template <>
+  struct hash<std::array<char, 32>>
   {
     size_t
-    operator()(const onionreq::PublicIdentityKey_t &k) const
+    operator()(const std::array<char, 32>& k) const
     {
       return std::hash<std::string_view>{}(std::string_view{k.data(), k.size()});
     }
   };
-} 
+
+}  // namespace std

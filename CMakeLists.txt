@@ -33,7 +33,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 option(WITH_PYBIND "build pybind module" ON)
-option(WITH_NODEJS "build nodejs module" ON)
+option(WITH_NODEJS "build nodejs native bindings" ON)
+option(WITH_JNI "build jni bindings" ON)
 
 
 add_library(onionreq
@@ -42,10 +43,16 @@ add_library(onionreq
   onionreq/transport.cpp
   onionreq/onion_maker.cpp)
 
+target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 if(WITH_PYBIND)
-  add_subdirectroy(pybind)
+  add_subdirectory(pybind)
 endif()
 
 if(WITH_NODEJS)
   add_subdirectory(nodejs)
+endif()
+
+if(WITH_JNI)
+  add_subdirectory(jni)
 endif()

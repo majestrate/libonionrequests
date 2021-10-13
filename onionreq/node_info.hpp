@@ -11,4 +11,4 @@ namespace onionreq
     uint16_t storagePort;
   };
 
-} 
+}  // namespace onionreq
