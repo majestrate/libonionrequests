@@ -8,6 +8,7 @@
 #include <memory>
 #include <system_error>
 #include <optional>
+#include <unordered_set>
 #include <unordered_map>
 
 #include <oxenmq/oxenmq.h>
@@ -33,8 +34,15 @@ namespace onionreq
   /// propagate feedback on errors and success
   class PathSelection_Base
   {
+   protected:
+    std::unordered_map<PublicIdentityKey_t, SNodeInfo> _snodelist;
+
    public:
     virtual ~PathSelection_Base() = default;
+
+    /// @brief give this path selector the nodes to choose from when doing path selection
+    void
+    StoreNodeList(std::unordered_map<PublicIdentityKey_t, SNodeInfo> snodelist);
 
     /// @brief maybe select some hops to go to a remote resource
     virtual std::optional<OnionPath>
@@ -42,7 +50,7 @@ namespace onionreq
 
     /// @brief record the result of an onion request along a path
     virtual void
-    OnionPathResult(const OnionPath& path, std::error_code result);
+    OnionPathResult(const OnionPath& path, std::error_code result) = 0;
   };
 
   /// @brief use oxenmq directly
@@ -57,8 +65,15 @@ namespace onionreq
   /// consensus
   class Consensus_Base
   {
+   protected:
+    std::unordered_set<std::string> _seeds;
+
    public:
     virtual ~Consensus_Base() = default;
+
+    /// @brief override seed nodes
+    void
+    SeedNodes(std::unordered_set<std::string> seeds);
 
     /// @brief construct a new nodefetcher
     virtual NodeListFetcher_Base*
@@ -72,9 +87,11 @@ namespace onionreq
   };
 
   /// @brief make a lokinet based consensus fetcher
-  Consensus_Base* Consensus(lokinet_oxenmq);
+  Consensus_Base*
+  Consensus(lokinet_oxenmq, oxenmq::OxenMQ&);
 
   /// @brief make a oxenmq based consensus fetcher
-  Consensus_Base* Consensus(direct_oxenmq);
+  Consensus_Base*
+  Consensus(direct_oxenmq, oxenmq::OxenMQ&);
 
 }  // namespace onionreq

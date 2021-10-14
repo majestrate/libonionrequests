@@ -36,13 +36,15 @@ option(WITH_PYBIND "build pybind module" ON)
 option(WITH_NODEJS "build nodejs native bindings" ON)
 option(WITH_JNI "build jni bindings" ON)
 
+pkg_check_modules(OXENMQ liboxenmq IMPORTED_TARGET REQUIRED)
 
 add_library(onionreq
   onionreq/consensus.cpp
   onionreq/snode_info.cpp
   onionreq/transport.cpp
   onionreq/onion_maker.cpp)
-
+target_compile_options(onionreq PUBLIC -fPIC)
+target_link_libraries(onionreq PUBLIC PkgConfig::OXENMQ)
 target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(WITH_PYBIND)
@@ -55,4 +57,11 @@ endif()
 
 if(WITH_JNI)
   add_subdirectory(jni)
+endif()
+
+
+option(WITH_TESTS "build tests" ON)
+
+if(WITH_TESTS)
+  add_subdirectory(tests)
 endif()

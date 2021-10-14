@@ -19,9 +19,9 @@ namespace onionreq
     std::vector<SNodeInfo> hops;
     /// @brief the remote resource we are sending stuff to
     RemoteResource_t remote;
-
     /// @brief snode used as our first hop
-    SNodeInfo& edge{hops[0]};
+    const SNodeInfo&
+    Edge() const;
   };
 
   /// @brief the payload we send to the first hop
