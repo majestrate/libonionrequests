@@ -49,6 +49,9 @@ target_compile_options(onionreq PUBLIC -fPIC)
 target_link_libraries(onionreq PUBLIC PkgConfig::OXENMQ PkgConfig::SODIUM)
 target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+
+add_subdirectory(docs)
+
 if(WITH_PYBIND)
   add_subdirectory(pybind)
 endif()
