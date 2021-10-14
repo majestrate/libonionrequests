@@ -27,7 +27,7 @@ namespace onionreq
         .def(
             "set_node_list",
             [](const std::shared_ptr<PathSelection_Base>& self,
-               std::unordered_map<PublicIdentityKey_t, SNodeInfo> nodelist) {
+               std::unordered_map<std::array<char, 32>, SNodeInfo> nodelist) {
               self->StoreNodeList(std::move(nodelist));
             });
 

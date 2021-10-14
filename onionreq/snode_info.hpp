@@ -14,9 +14,9 @@ namespace onionreq
   struct SNodeInfo
   {
     /// identity key for .snode
-    PublicIdentityKey_t identity;
+    std::array<char, 32> identity;
     /// x25519 key for onion requests
-    PublicOnionKey_t onion;
+    std::array<char, 32> onion;
     /// public internet ip
     std::string publicIP;
     /// storage server port

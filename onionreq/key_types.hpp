@@ -3,15 +3,6 @@
 #include <array>
 #include <string_view>
 
-namespace onionreq
-{
-  /// @brief public identity key for the .snode address
-  using PublicIdentityKey_t = std::array<char, 32>;
-  /// @brief public onion request key for keyexchange
-  using PublicOnionKey_t = std::array<char, 32>;
-
-}  // namespace onionreq
-
 namespace std
 {
   template <>

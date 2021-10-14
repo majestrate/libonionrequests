@@ -3,7 +3,7 @@
 namespace onionreq
 {
   void
-  PathSelection_Base::StoreNodeList(std::unordered_map<PublicIdentityKey_t, SNodeInfo> snodelist)
+  PathSelection_Base::StoreNodeList(std::unordered_map<std::array<char, 32>, SNodeInfo> snodelist)
   {
     _snodelist = std::move(snodelist);
   }
@@ -35,12 +35,12 @@ namespace onionreq
 
     void
     FetchAll(
-        std::function<void(std::unordered_map<PublicIdentityKey_t, SNodeInfo>)> callback) override
+        std::function<void(std::unordered_map<std::array<char, 32>, SNodeInfo>)> callback) override
     {}
 
     void
     Fetch(
-        PublicIdentityKey_t ident, std::function<void(std::optional<SNodeInfo>)> callback) override
+        std::array<char, 32> ident, std::function<void(std::optional<SNodeInfo>)> callback) override
     {}
   };
 
