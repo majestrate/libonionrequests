@@ -32,19 +32,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-option(WITH_PYBIND "build pybind module" ON)
-option(WITH_NODEJS "build nodejs native bindings" ON)
-option(WITH_JNI "build jni bindings" ON)
+option(WITH_PYBIND "build pybind module" OFF)
+option(WITH_NODEJS "build nodejs native bindings" OFF)
+option(WITH_JNI "build jni bindings" OFF)
 
 pkg_check_modules(OXENMQ liboxenmq IMPORTED_TARGET REQUIRED)
+pkg_check_modules(SODIUM libsodium IMPORTED_TARGET REQUIRED)
 
 add_library(onionreq
   onionreq/consensus.cpp
   onionreq/snode_info.cpp
   onionreq/transport.cpp
   onionreq/onion_maker.cpp)
+
 target_compile_options(onionreq PUBLIC -fPIC)
-target_link_libraries(onionreq PUBLIC PkgConfig::OXENMQ)
+target_link_libraries(onionreq PUBLIC PkgConfig::OXENMQ PkgConfig::SODIUM)
 target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(WITH_PYBIND)
