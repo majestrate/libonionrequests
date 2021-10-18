@@ -107,7 +107,7 @@ main(int argc, char* argv[])
       }
       const auto found = pick_random_from<typename decltype(result)::value_type>(result);
       pathselector->StoreNodeList(std::move(result));
-      spdlog::info("chose remote {}", found.second.SNodeAddr());
+      spdlog::info("chose remote {}", found.second.HttpsDirect());
       _remote.set_value(std::optional<onionreq::SNodeInfo>{found.second});
     });
   };
