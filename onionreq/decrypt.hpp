@@ -26,7 +26,7 @@ namespace onionreq
     /// @brief give this decoder a pile of stuff and decode it into some junk
     /// throws on decode error
     Junk
-    DecryptJunk(std::string_view junk) const;
+    DecryptJunk(std::string_view stuff) const;
   };
 
 }  // namespace onionreq
