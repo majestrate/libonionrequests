@@ -122,7 +122,12 @@ main(int argc, char* argv[])
   auto handler = [pathselector](std::optional<std::string> maybePlaintext) {
     if (maybePlaintext)
     {
-      spdlog::info("got reply: {}", *maybePlaintext);
+      const auto json = nlohmann::json::parse(*maybePlaintext);
+      if (auto itr = json.find("body"); itr != json.end())
+      {
+        const auto inner = nlohmann::json::parse(itr->get<std::string>());
+        spdlog::info("got reply: {}", inner.dump());
+      }
       _exit_promise.set_value(0);
     }
     else
@@ -138,6 +143,7 @@ main(int argc, char* argv[])
                     pathselector,
                     onionmaker = std::shared_ptr<onionreq::OnionMaker_Base>{
                         OnionMaker(onionreq::all_aesgcm_hops{})}](auto req) {
+    spdlog::info("data={}", req.dump());
     spdlog::info("selecting hop to {}", remote.DirectAddr());
     if (auto maybe = pathselector->MaybeSelectHopsTo(remote))
     {
@@ -168,8 +174,11 @@ main(int argc, char* argv[])
       _exit_promise.set_value(1);
     }
   };
+  std::string_view user_pubkey =
+      "05fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210";
 
-  sendOnion(nlohmann::json{{"method", "penis"}});
+  std::map<std::string_view, std::string_view> params{{"pubkey", user_pubkey}};
+  sendOnion(nlohmann::json{{"method", "get_snodes_for_pubkey"}, {"params", params}});
 
   auto future = _exit_promise.get_future();
 
