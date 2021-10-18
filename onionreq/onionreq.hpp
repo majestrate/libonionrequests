@@ -7,3 +7,4 @@
 #include "snode_info.hpp"
 #include "sogs_info.hpp"
 #include "key_types.hpp"
+#include "decrypt.hpp"
