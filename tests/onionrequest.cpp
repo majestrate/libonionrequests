@@ -142,7 +142,7 @@ main(int argc, char* argv[])
                     handler,
                     pathselector,
                     onionmaker = std::shared_ptr<onionreq::OnionMaker_Base>{
-                        OnionMaker(onionreq::all_aesgcm_hops{})}](auto req) {
+                        OnionMaker(onionreq::all_xchacha20_hops{})}](auto req) {
     spdlog::info("data={}", req.dump());
     spdlog::info("selecting hop to {}", remote.DirectAddr());
     if (auto maybe = pathselector->MaybeSelectHopsTo(remote))
