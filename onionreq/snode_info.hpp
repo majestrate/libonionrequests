@@ -5,7 +5,7 @@
 
 #include "key_types.hpp"
 
-#include <oxenmq/bt_value.h>
+#include <oxenc/bt_value.h>
 #include <nlohmann/json.hpp>
 
 namespace onionreq
@@ -14,24 +14,58 @@ namespace onionreq
   struct SNodeInfo
   {
     /// identity key for .snode
-    std::array<char, 32> identity;
+    ed25519_pubkey identity;
     /// x25519 key for onion requests
-    std::array<char, 32> onion;
+    x25519_pubkey onion;
     /// public internet ip
     std::string publicIP;
-    /// storage server port
-    uint16_t storagePort;
+    /// storage server zmq port
+    uint16_t zmqPort;
+    /// storage server https port
+    uint16_t httpsPort;
 
     SNodeInfo() = default;
 
     /// @brief construct from json object
-    explicit SNodeInfo(nlohmann::json object);
+    explicit SNodeInfo(const nlohmann::json& object);
     /// @brief construct from bt dict
-    explicit SNodeInfo(oxenmq::bt_dict dict);
+    explicit SNodeInfo(const oxenc::bt_dict& dict);
 
-    /// @brief compute .snode address as string
+    nlohmann::json
+    ControlData() const;
+
+    /// @brief compute the omq connection string via lokinet
     std::string
     SNodeAddr() const;
+
+    /// @brief compute the direct omq connection string
+    std::string
+    DirectAddr() const;
+
+    std::string
+    HttpsDirect() const;
+
+    std::string
+    HttpsSNode() const;
+
+    bool
+    operator==(const SNodeInfo& other) const
+    {
+      return identity == other.identity;
+    }
   };
 
 }  // namespace onionreq
+
+namespace std
+{
+  template <>
+  struct hash<onionreq::SNodeInfo>
+  {
+    size_t
+    operator()(const onionreq::SNodeInfo& info) const
+    {
+      return std::hash<onionreq::ed25519_pubkey>{}(info.identity);
+    }
+  };
+}  // namespace std

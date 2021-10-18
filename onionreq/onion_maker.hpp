@@ -10,7 +10,7 @@ namespace onionreq
 
     /// @brief given an onion path, make an onion request, encrypt it and all that stuff
     virtual OnionPayload
-    MakeOnionFromHops(std::string plaintext, const OnionPath& path) const = 0;
+    MakeOnion(std::string_view plaintext, const OnionPath& path) const = 0;
   };
 
   struct all_xchacha20_hops

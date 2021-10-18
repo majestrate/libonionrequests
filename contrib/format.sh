@@ -21,9 +21,9 @@ fi
 
 cd "$(dirname $0)/../"
 if [ "$1" = "verify" ] ; then
-    if [ $($binary --output-replacements-xml $(find onionreq nodejs pybind jni | grep -E '\.([hc](pp)?|mm?)$' | grep -v '\#') | grep '</replacement>' | wc -l) -ne 0 ] ; then
+    if [ $($binary --output-replacements-xml $(find tests onionreq nodejs pybind jni | grep -E '\.([hc](pp)?|mm?)$' | grep -v '\#') | grep '</replacement>' | wc -l) -ne 0 ] ; then
         exit 1
     fi
 else
-    $binary -i $(find onionreq nodejs pybind jni | grep -E '\.([hc](pp)?|mm)$' | grep -v '\#') &> /dev/null
+    $binary -i $(find tests onionreq nodejs pybind jni | grep -E '\.([hc](pp)?|mm)$' | grep -v '\#') &> /dev/null
 fi

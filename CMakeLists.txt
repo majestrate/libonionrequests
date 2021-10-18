@@ -38,15 +38,21 @@ option(WITH_JNI "build jni bindings" OFF)
 
 pkg_check_modules(OXENMQ liboxenmq IMPORTED_TARGET REQUIRED)
 pkg_check_modules(SODIUM libsodium IMPORTED_TARGET REQUIRED)
+pkg_check_modules(CRYPTO libcrypto IMPORTED_TARGET REQUIRED)
+pkg_check_modules(OXENC liboxenc IMPORTED_TARGET REQUIRED)
 
 add_library(onionreq
+  onionreq/channel_encryption.cpp
   onionreq/consensus.cpp
+  onionreq/key_types.cpp
+  onionreq/signature.cpp
+  onionreq/sogs_info.cpp
   onionreq/snode_info.cpp
   onionreq/transport.cpp
   onionreq/onion_maker.cpp)
 
 target_compile_options(onionreq PUBLIC -fPIC)
-target_link_libraries(onionreq PUBLIC PkgConfig::OXENMQ PkgConfig::SODIUM)
+target_link_libraries(onionreq PUBLIC PkgConfig::OXENMQ PkgConfig::SODIUM PkgConfig::CRYPTO PkgConfig::OXENC)
 target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 
@@ -64,9 +70,9 @@ if(WITH_JNI)
   add_subdirectory(jni)
 endif()
 
-
 option(WITH_TESTS "build tests" ON)
 
 if(WITH_TESTS)
+  add_subdirectory(external)
   add_subdirectory(tests)
 endif()

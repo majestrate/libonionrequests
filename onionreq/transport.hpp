@@ -16,16 +16,11 @@ namespace onionreq
     virtual ~Transport_Base() = default;
 
     virtual void
-    SendToEdge(
-        const SNodeInfo& edge,
-        OnionPayload payload,
-        std::function<void(std::error_code)> completionHandler) = 0;
+    SendPayload(
+        OnionPayload payload, std::function<void(std::optional<std::string>)> responseHandler) = 0;
   };
 
   Transport_Base*
-  Transport(const std::shared_ptr<oxenmq::OxenMQ>&);
-
-  Transport_Base*
-  Transport(const std::shared_ptr<lokinet::Context>&);
+  Transport(oxenmq::OxenMQ&);
 
 }  // namespace onionreq

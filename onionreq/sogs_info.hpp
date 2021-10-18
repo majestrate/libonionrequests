@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <nlohmann/json.hpp>
 
 namespace onionreq
 {
@@ -22,5 +23,8 @@ namespace onionreq
     uint16_t port;
 
     explicit SOGSInfo(std::string_view url);
+
+    nlohmann::json
+    ControlData() const;
   };
 }  // namespace onionreq
