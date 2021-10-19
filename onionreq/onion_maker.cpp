@@ -3,8 +3,10 @@
 #include "channel_encryption.hpp"
 #include <oxenc/base64.h>
 #include <variant>
+#include "junk.hpp"
 
 #include <sodium/crypto_box.h>
+#include <spdlog/spdlog.h>
 
 namespace onionreq
 {
@@ -21,6 +23,28 @@ namespace onionreq
 #error Unknown endianness
 #endif
       return str;
+    }
+
+    std::pair<std::shared_ptr<JunkParser_Base>, std::string>
+    MakeJunk(
+        const RemoteResource_t& remote,
+        std::string_view plain,
+        EncryptType keytype = EncryptType::aes_gcm)
+    {
+      if (auto* ptr = std::get_if<SNodeInfo>(&remote))
+        return {std::shared_ptr<JunkParser_Base>(JunkParser(*ptr, keytype)), std::string{plain}};
+
+      x25519_pubkey pubkey = std::visit([](auto&& k) { return k.onion; }, remote);
+
+      x25519_keypair _keys{};
+      crypto_box_keypair(_keys.first.data(), _keys.second.data());
+
+      ChannelEncryption enc{_keys.second, _keys.first, false};
+
+      std::string ct = encode_size(plain.size()) + enc.encrypt(keytype, plain, pubkey)
+          + nlohmann::json{{"ephemeral_key", _keys.first.hex()}, {"enc_type", to_string(keytype)}}
+                .dump();
+      return {std::shared_ptr<JunkParser_Base>(JunkParser(_keys)), ct};
     }
 
   }  // namespace
@@ -69,8 +93,8 @@ namespace onionreq
         // Routing data for this hop:
         nlohmann::json routing{
             {"destination", std::prev(it)->identity.hex()},  // Next hop's ed25519 key
-            {"ephemeral_key",
-             A.hex()},  // The x25519 ephemeral_key here is the key for the *next* hop to use
+            {"ephemeral_key", A.hex()},  // The x25519 ephemeral_key here is the key for the
+                                         // *next* hop to use
             {"enc_type", to_string(keytype)},
         };
 
@@ -82,8 +106,8 @@ namespace onionreq
         blob = e.encrypt(keytype, blob, it->onion);
       }
 
-      // The data going to the first hop needs to be wrapped in one more layer to tell the first hop
-      // how to decrypt the initial payload:
+      // The data going to the first hop needs to be wrapped in one more layer to tell the
+      // first hop how to decrypt the initial payload:
       blob = encode_size(blob.size()) + blob
           + nlohmann::json{{"ephemeral_key", A.hex()}, {"enc_type", to_string(keytype)}}.dump();
 
@@ -112,7 +136,6 @@ namespace onionreq
         }
         return std::nullopt;
       };
-
       return onion;
     }
   };

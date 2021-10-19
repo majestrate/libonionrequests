@@ -51,7 +51,9 @@ namespace onionreq
     auto
     MakeDecrypter(HandlerFunc handler) const
     {
-      return [handler, this](std::string ct) { handler(maybeDecryptResponse(std::move(ct))); };
+      return [handler = std::move(handler), this](std::string ct) {
+        handler(maybeDecryptResponse(std::move(ct)));
+      };
     }
   };
 }  // namespace onionreq

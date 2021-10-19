@@ -31,6 +31,10 @@ namespace onionreq
     /// @brief construct from bt dict
     explicit SNodeInfo(const oxenc::bt_dict& dict);
 
+    /// @brief make string representation for display purposes
+    std::string
+    ToString() const;
+
     nlohmann::json
     ControlData() const;
 

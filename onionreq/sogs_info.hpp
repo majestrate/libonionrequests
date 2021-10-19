@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <nlohmann/json.hpp>
+#include "key_types.hpp"
 
 namespace onionreq
 {
@@ -18,11 +19,13 @@ namespace onionreq
   struct SOGSInfo
   {
     SOGSProtocol protocol;
-    std::string pubkey;
+    x25519_pubkey onion;
     std::string hostname;
     uint16_t port;
 
-    explicit SOGSInfo(std::string_view url);
+    /// @brief make string representation for display purposes
+    std::string
+    ToString() const;
 
     nlohmann::json
     ControlData() const;

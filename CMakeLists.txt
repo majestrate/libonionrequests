@@ -44,7 +44,7 @@ pkg_check_modules(OXENC liboxenc IMPORTED_TARGET REQUIRED)
 add_library(onionreq
   onionreq/channel_encryption.cpp
   onionreq/consensus.cpp
-  onionreq/decrypt.cpp
+  onionreq/junk.cpp
   onionreq/key_types.cpp
   onionreq/signature.cpp
   onionreq/sogs_info.cpp

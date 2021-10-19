@@ -60,4 +60,10 @@ namespace onionreq
     return nlohmann::json{{"headers", {}}};
   }
 
+  std::string
+  SNodeInfo::ToString() const
+  {
+    return "[snode " + publicIP + ":" + std::to_string(httpsPort) + "]";
+  }
+
 }  // namespace onionreq

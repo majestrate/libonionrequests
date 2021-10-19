@@ -15,27 +15,6 @@ namespace onionreq
 
   class PathSelection_Default : public PathSelection_Base
   {
-    std::optional<OnionPath>
-    MaybeSelectHopsToSNode(SNodeInfo info, int hopLength)
-    {
-      // maximum unique number of edges to use
-      constexpr size_t MaxEdges = 4;
-      OnionPath path;
-      AccessList([&](const auto& list) {
-        std::vector<typename std::decay<decltype(list)>::type::value_type> hops;
-        std::sample(list.begin(), list.end(), std::back_inserter(hops), hopLength, PRNG{});
-        for (const auto& hop : hops)
-          path.hops.push_back(hop.second);
-        if (_edges.size() >= MaxEdges)
-        {
-          path.Edge() = pick_random_from<SNodeInfo>(_edges);
-        }
-        _edges.insert(path.Edge());
-      });
-      path.remote = info;
-      return path;
-    }
-
     /// XXX: only access me while using AccessList
     std::unordered_set<SNodeInfo> _edges;
 
@@ -49,12 +28,22 @@ namespace onionreq
     std::optional<OnionPath>
     MaybeSelectHopsTo(RemoteResource_t remote) override
     {
-      if (auto* snode_info = std::get_if<SNodeInfo>(&remote))
-      {
-        return MaybeSelectHopsToSNode(*snode_info, DefaultHopLength());
-      }
-      // TODO: implement me
-      return std::nullopt;
+      // maximum unique number of edges to use
+      constexpr size_t MaxEdges = 4;
+      OnionPath path;
+      AccessList([&](const auto& list) {
+        std::vector<typename std::decay<decltype(list)>::type::value_type> hops;
+        std::sample(list.begin(), list.end(), std::back_inserter(hops), DefaultHopLength(), PRNG{});
+        for (const auto& hop : hops)
+          path.hops.push_back(hop.second);
+        if (_edges.size() >= MaxEdges)
+        {
+          path.Edge() = pick_random_from<SNodeInfo>(_edges);
+        }
+        _edges.insert(path.Edge());
+      });
+      path.remote = remote;
+      return path;
     }
 
     void

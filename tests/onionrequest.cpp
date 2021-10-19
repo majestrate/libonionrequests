@@ -3,6 +3,7 @@
 
 #include <spdlog/spdlog.h>
 #include <oxenmq/oxenmq.h>
+#include <oxenc/hex.h>
 
 #include <future>
 #include <signal.h>
@@ -44,6 +45,10 @@ class Transport_CURL : public onionreq::Transport_Base
       onionreq::OnionPayload payload,
       std::function<void(std::optional<std::string>)> responseHandler) override
   {
+    for (const auto& hop : payload.path.hops)
+    {
+      spdlog::info("hop: {}", hop.ToString());
+    }
     const auto url = payload.path.Edge().HttpsDirect();
     spdlog::info("sending to {}", url);
     auto res = cpr::Post(cpr::Url{url}, cpr::Body{payload.ciphertext}, cpr::VerifySsl{false});
@@ -93,9 +98,9 @@ main(int argc, char* argv[])
 
   std::shared_ptr<onionreq::Transport_Base> transport{new Transport_CURL{}};
 
-  onionreq::SNodeInfo remote;
+  onionreq::RemoteResource_t remote;
 
-  std::promise<std::optional<onionreq::SNodeInfo>> _remote;
+  std::promise<std::optional<onionreq::RemoteResource_t>> _remote;
 
   auto refreshNodeList = [fetcher, pathselector, &_remote]() {
     spdlog::info("fetching node list");
@@ -108,8 +113,7 @@ main(int argc, char* argv[])
       }
       const auto found = pick_random_from<typename decltype(result)::value_type>(result);
       pathselector->StoreNodeList(std::move(result));
-      spdlog::info("chose remote {}", found.second.HttpsDirect());
-      _remote.set_value(std::optional<onionreq::SNodeInfo>{found.second});
+      _remote.set_value(std::optional<onionreq::RemoteResource_t>{found.second});
     });
   };
 
@@ -119,6 +123,23 @@ main(int argc, char* argv[])
     remote = *maybe;
   else
     return 1;
+
+  if (argc > 2)
+  {
+    onionreq::SOGSInfo info{};
+    info.protocol = onionreq::SOGSProtocol::https;
+    info.hostname = argv[1];
+    info.port = 443;
+    std::string_view hex_str{argv[2]};
+    const auto expected = oxenc::to_hex_size(info.onion.size());
+    if (hex_str.size() != expected)
+    {
+      spdlog::error("bad pubkey size {} != {}", expected, hex_str.size());
+      return 1;
+    }
+    oxenc::from_hex(hex_str.begin(), hex_str.end(), info.onion.begin());
+    remote = info;
+  }
 
   auto handler = [pathselector](std::optional<std::string> maybePlaintext) {
     if (maybePlaintext)
@@ -138,26 +159,25 @@ main(int argc, char* argv[])
     }
   };
 
-  auto sendOnion = [&remote,
+  auto sendOnion = [remote,
                     transport,
                     handler,
                     pathselector,
                     onionmaker = std::shared_ptr<onionreq::OnionMaker_Base>{
                         OnionMaker(onionreq::all_xchacha20_hops{})}](auto req) {
-    spdlog::info("data={}", req.dump());
-    spdlog::info("selecting hop to {}", remote.DirectAddr());
+    const auto remote_name = std::visit([](auto&& remote) { return remote.ToString(); }, remote);
+
     if (auto maybe = pathselector->MaybeSelectHopsTo(remote))
     {
       const auto payload = onionmaker->MakeOnion(req.dump(), *maybe);
+
       spdlog::info(
           "send payload of {} bytes to {} via edge {}",
           payload.ciphertext.size(),
-          remote.DirectAddr(),
+          remote_name,
           maybe->Edge().DirectAddr());
       transport->SendPayload(
-          payload,
-          [process = payload.MakeDecrypter(handler), path = *maybe, pathselector](
-              auto maybeResponse) {
+          payload, [process = payload.MakeDecrypter(handler)](auto maybeResponse) {
             if (maybeResponse)
             {
               process(*maybeResponse);
@@ -171,7 +191,7 @@ main(int argc, char* argv[])
     }
     else
     {
-      spdlog::warn("could not select hops to {}", remote.DirectAddr());
+      spdlog::warn("could not select hops to {}", remote_name);
       _exit_promise.set_value(1);
     }
   };
@@ -179,7 +199,10 @@ main(int argc, char* argv[])
       "05fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210";
 
   std::map<std::string_view, std::string_view> params{{"pubkey", user_pubkey}};
-  sendOnion(nlohmann::json{{"method", "get_snodes_for_pubkey"}, {"params", params}});
+  sendOnion(nlohmann::json{
+      {"method", "get_snodes_for_pubkey"},
+      {"ephemeral_key", user_pubkey.substr(2)},
+      {"params", params}});
 
   auto future = _exit_promise.get_future();
 
