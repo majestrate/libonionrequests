@@ -24,29 +24,6 @@ namespace onionreq
 #endif
       return str;
     }
-
-    std::pair<std::shared_ptr<JunkParser_Base>, std::string>
-    MakeJunk(
-        const RemoteResource_t& remote,
-        std::string_view plain,
-        EncryptType keytype = EncryptType::aes_gcm)
-    {
-      if (auto* ptr = std::get_if<SNodeInfo>(&remote))
-        return {std::shared_ptr<JunkParser_Base>(JunkParser(*ptr, keytype)), std::string{plain}};
-
-      x25519_pubkey pubkey = std::visit([](auto&& k) { return k.onion; }, remote);
-
-      x25519_keypair _keys{};
-      crypto_box_keypair(_keys.first.data(), _keys.second.data());
-
-      ChannelEncryption enc{_keys.second, _keys.first, false};
-
-      std::string ct = encode_size(plain.size()) + enc.encrypt(keytype, plain, pubkey)
-          + nlohmann::json{{"ephemeral_key", _keys.first.hex()}, {"enc_type", to_string(keytype)}}
-                .dump();
-      return {std::shared_ptr<JunkParser_Base>(JunkParser(_keys)), ct};
-    }
-
   }  // namespace
 
   class OnionMaker_Impl : public OnionMaker_Base
