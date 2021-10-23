@@ -39,7 +39,11 @@ namespace
   pick_random(typename Container::const_iterator begin, typename Container::const_iterator end)
   {
     std::vector<typename Container::value_type> _vec;
-    std::sample(begin, end, std::back_inserter(_vec), 1, PRNG{});
+    std::sample(begin, end, std::back_inserter(_vec), std::distance(begin, end), PRNG{});
+
+    if (_vec.empty())
+      throw std::invalid_argument{"selection range empty"};
+
     return Out_Type{_vec[0]};
   }
 

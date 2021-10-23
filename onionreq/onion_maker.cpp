@@ -26,12 +26,9 @@ namespace onionreq
     }
   }  // namespace
 
+  template <EncryptType keytype>
   class OnionMaker_Impl : public OnionMaker_Base
   {
-   protected:
-    virtual EncryptType
-    EncType() const = 0;
-
    public:
     OnionPayload
     MakeOnion(std::string_view payload, const OnionPath& path) const override
@@ -39,7 +36,6 @@ namespace onionreq
       const auto control_json =
           std::visit([](const auto& val) { return val.ControlData(); }, path.remote);
       const auto control = control_json.dump();
-      const auto keytype = EncType();
 
       OnionPayload onion{};
       onion.path = path;
@@ -89,11 +85,8 @@ namespace onionreq
           + nlohmann::json{{"ephemeral_key", A.hex()}, {"enc_type", to_string(keytype)}}.dump();
 
       onion.maybeDecryptResponse =
-          [keytype,
-           d = ChannelEncryption{final_seckey, final_pubkey, false},
-           finalKey = path.hops.back().onion](std::string ct) -> std::optional<std::string> {
-        auto body = ct;
-        auto orig_size = ct.size();
+          [d = ChannelEncryption{final_seckey, final_pubkey, false},
+           finalKey = path.hops.back().onion](std::string body) -> std::optional<std::string> {
         try
         {
           return d.decrypt(keytype, body, finalKey);
@@ -117,33 +110,13 @@ namespace onionreq
     }
   };
 
-  class OnionMaker_ChaCha : public OnionMaker_Impl
-  {
-   protected:
-    EncryptType
-    EncType() const override
-    {
-      return EncryptType::xchacha20;
-    }
-  };
-
-  class OnionMaker_AESGCM : public OnionMaker_Impl
-  {
-   protected:
-    EncryptType
-    EncType() const override
-    {
-      return EncryptType::aes_gcm;
-    }
-  };
-
   OnionMaker_Base* OnionMaker(all_aesgcm_hops)
   {
-    return new OnionMaker_AESGCM{};
+    return new OnionMaker_Impl<EncryptType::aes_gcm>{};
   }
 
   OnionMaker_Base* OnionMaker(all_xchacha20_hops)
   {
-    return new OnionMaker_ChaCha{};
+    return new OnionMaker_Impl<EncryptType::xchacha20>{};
   }
 }  // namespace onionreq

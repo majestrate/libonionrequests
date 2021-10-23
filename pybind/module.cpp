@@ -6,4 +6,5 @@ PYBIND11_MODULE(pyonionreq, m)
   onionreq::Transport_Init(m);
   onionreq::OnionMaker_Init(m);
   onionreq::Consensus_Init(m);
+  onionreq::Junk_Init(m);
 }

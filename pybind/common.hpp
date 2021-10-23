@@ -17,5 +17,17 @@ namespace onionreq
   Transport_Init(py::module& mod);
 
   void
+  Junk_Init(py::module& mod);
+
+  void
   Common_Init(py::module& mod);
+
+  template <typename T>
+  struct Holder
+  {
+    std::unique_ptr<T> impl;
+    explicit Holder(T* _impl) : impl{_impl}
+    {}
+  };
+
 }  // namespace onionreq

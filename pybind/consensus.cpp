@@ -4,38 +4,56 @@
 
 namespace onionreq
 {
-  oxenmq::OxenMQ _mq;
+  class PyDirectConsensus : public Holder<Consensus_Base>
+  {
+    oxenmq::OxenMQ _mq;
+
+   public:
+    explicit PyDirectConsensus(std::vector<std::string> seeds) : Holder<Consensus_Base>{nullptr}
+    {
+      if (seeds.empty())
+        throw std::invalid_argument{"cannot use empty seed node list"};
+      std::unordered_set<std::string> _seeds{seeds.begin(), seeds.end()};
+      impl.reset(Consensus(direct_oxenmq{}, _mq));
+      impl->SeedNodes(std::move(_seeds));
+      _mq.start();
+    }
+  };
 
   void
   Consensus_Init(py::module& mod)
   {
     auto submod = mod.def_submodule("consensus");
-    py::class_<Consensus_Base, std::shared_ptr<Consensus_Base>>(submod, "ConsenusBase")
-        .def(
-            "make_path_selector",
-            [](const Consensus_Base& self) {
-              return std::shared_ptr<PathSelection_Base>{self.CreatePathSelector()};
-            })
-        .def("make_node_fetcher", [](const Consensus_Base& self) {
-          return std::shared_ptr<NodeListFetcher_Base>{self.CreateNodeFetcher()};
-        });
 
-    py::class_<NodeListFetcher_Base, std::shared_ptr<NodeListFetcher_Base>>(
-        submod, "NodeFetcherBase");
-
-    py::class_<PathSelection_Base, std::shared_ptr<PathSelection_Base>>(submod, "PathSelectorBase")
+    py::class_<Holder<NodeListFetcher_Base>>(submod, "NodeFetcherBase")
         .def(
-            "set_node_list",
-            [](const std::shared_ptr<PathSelection_Base>& self,
-               std::unordered_map<std::array<char, 32>, SNodeInfo> nodelist) {
-              self->StoreNodeList(std::move(nodelist));
+            "fetch_all",
+            [](const Holder<NodeListFetcher_Base>& self,
+               std::function<void(std::unordered_map<ed25519_pubkey, SNodeInfo>)> callback) {
+              py::gil_scoped_release rel{};
+              self.impl->FetchAll([callback](auto nodes) {
+                py::gil_scoped_acquire gil{};
+                callback(std::move(nodes));
+              });
             });
 
-    submod.def("direct", []() {
-      return std::shared_ptr<Consensus_Base>{Consensus(direct_oxenmq{}, _mq)};
-    });
-    submod.def("lokinet", []() {
-      return std::shared_ptr<Consensus_Base>{Consensus(lokinet_oxenmq{}, _mq)};
-    });
+    py::class_<Holder<PathSelection_Base>>(submod, "PathSelectorBase")
+        .def(
+            "set_node_list",
+            [](const Holder<PathSelection_Base>& self,
+               std::unordered_map<ed25519_pubkey, SNodeInfo> nodelist) {
+              self.impl->StoreNodeList(std::move(nodelist));
+            });
+
+    py::class_<PyDirectConsensus>(submod, "Direct")
+        .def(py::init<std::vector<std::string>>())
+        .def(
+            "make_path_selector",
+            [](const PyDirectConsensus& self) {
+              return Holder<PathSelection_Base>{self.impl->CreatePathSelector()};
+            })
+        .def("make_node_fetcher", [](const PyDirectConsensus& self) {
+          return Holder<NodeListFetcher_Base>{self.impl->CreateNodeFetcher()};
+        });
   }
 }  // namespace onionreq
