@@ -9,20 +9,24 @@ namespace onionreq
     std::unique_ptr<JunkParser_Base> _impl;
 
    public:
-    explicit PyJunkParser(py::bytes seed) : _impl{nullptr}
+    explicit PyJunkParser(py::bytes pubkey, py::bytes privkey) : _impl{nullptr}
     {
       x25519_keypair keys{};
 
-      char* _seed{};
-      ssize_t _sz{};
+      auto set_key = [](auto& out, const py::bytes& in) {
+        char* ptr{};
+        ssize_t _sz{};
 
-      PyBytes_AsStringAndSize(seed.ptr(), &_seed, &_sz);
+        PyBytes_AsStringAndSize(in.ptr(), &ptr, &_sz);
 
-      if (_sz != crypto_box_SEEDBYTES)
-        throw std::invalid_argument{"invalid seed size"};
+        if (_sz != out.size())
+          throw std::invalid_argument{"invalid pubkey size"};
 
-      crypto_box_seed_keypair(
-          keys.first.data(), keys.second.data(), reinterpret_cast<const uint8_t*>(_seed));
+        std::copy_n(ptr, _sz, out.begin());
+      };
+
+      set_key(keys.first, pubkey);
+      set_key(keys.second, privkey);
 
       _impl.reset(JunkParser(std::move(keys)));
     }
@@ -47,7 +51,7 @@ namespace onionreq
         .def_readonly("payload", &Junk::payload);
 
     py::class_<PyJunkParser>(submod, "Parser")
-        .def(py::init<py::bytes>())
+        .def(py::init<py::bytes, py::bytes>())
         .def("parse_junk", [](const PyJunkParser& self, std::string_view stuff) -> Junk {
           return self.Parse(std::move(stuff));
         });
