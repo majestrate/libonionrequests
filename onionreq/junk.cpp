@@ -32,11 +32,20 @@ namespace onionreq
     ParseJunk(std::string_view data) const override
     {
       auto sz = decode_size(data);
-      EncryptType keytype{EncryptType::aes_gcm};
-      auto ciphertext = data.substr(sizeof(sz), sizeof(sz) + sz);
-      auto metadata = nlohmann::json::parse(data.substr(sizeof(sz) + sz));
+      data.remove_prefix(sizeof(sz));
+      if (data.size() < sz)
+        throw std::invalid_argument{"encrypted data segment too small"};
+      auto ciphertext = data.substr(0, sz);
+      data.remove_prefix(sz);
+      auto metadata = nlohmann::json::parse(data);
 
       x25519_pubkey remote_pk{};
+
+      EncryptType keytype;
+      if (auto encit = metadata.find("enc_type"); encit != metadata.end())
+        keytype = parse_enc_type(encit->get<std::string_view>());
+      else
+        keytype = EncryptType::aes_gcm;
 
       if (auto itr = metadata.find("ephemeral_key"); itr != metadata.end())
         remote_pk = parse_x25519_pubkey(itr->get<std::string>());
