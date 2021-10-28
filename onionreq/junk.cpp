@@ -1,10 +1,10 @@
 #include "junk.hpp"
 #include "channel_encryption.hpp"
 #include <string_view>
-#include <endian.h>
 #include <stdexcept>
 
 #include <nlohmann/json.hpp>
+#include <oxenc/endian.h>
 
 namespace onionreq
 {
@@ -15,7 +15,7 @@ namespace onionreq
     {
       if (data.size() < sizeof(uint32_t))
         throw std::invalid_argument{"payload for junk decrypter too small"};
-      return htole32(*reinterpret_cast<const uint32_t*>(data.data()));
+      return oxenc::load_little_to_host<uint32_t>(data.data());
     }
 
   }  // namespace
