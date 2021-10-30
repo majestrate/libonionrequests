@@ -1,59 +1,64 @@
 #include "common.hpp"
 #include <onionreq/junk.hpp>
+#include <pybind11/gil.h>
 #include <sodium/crypto_box.h>
 
 namespace onionreq
 {
-  class PyJunkParser
-  {
-    std::unique_ptr<JunkParser_Base> _impl;
+  template <typename T>
+  static void set_key(T& out, const py::bytes& in) {
+    char* ptr;
+    ssize_t sz;
+    PyBytes_AsStringAndSize(in.ptr(), &ptr, &sz);
 
-   public:
-    explicit PyJunkParser(py::bytes pubkey, py::bytes privkey) : _impl{nullptr}
-    {
-      x25519_keypair keys{};
+    if (sz != out.size())
+      throw std::invalid_argument{"invalid pubkey size"};
 
-      auto set_key = [](auto& out, const py::bytes& in) {
-        char* ptr{};
-        ssize_t _sz{};
-
-        PyBytes_AsStringAndSize(in.ptr(), &ptr, &_sz);
-
-        if (_sz != out.size())
-          throw std::invalid_argument{"invalid pubkey size"};
-
-        std::copy_n(ptr, _sz, out.begin());
-      };
-
-      set_key(keys.first, pubkey);
-      set_key(keys.second, privkey);
-
-      _impl.reset(JunkParser(std::move(keys)));
-    }
-
-    Junk
-    Parse(std::string_view stuff) const
-    {
-      return _impl->ParseJunk(std::move(stuff));
-    }
-  };
+    std::copy_n(ptr, sz, out.begin());
+  }
 
   void
   Junk_Init(py::module& mod)
   {
+    using namespace pybind11::literals;
     auto submod = mod.def_submodule("junk");
-    py::class_<Junk>(submod, "Junk")
+    py::class_<Junk>(submod, "Junk",
+        "Class holding a parsed reply that is able to encrypt a reply to the message sender"
+        )
         .def(
             "transformReply",
-            [](const Junk& junk, std::string replyStr) -> std::string {
-              return junk.transformReply(std::move(replyStr));
-            })
-        .def_readonly("payload", &Junk::payload);
+            [](const Junk& junk, py::bytes replyStr) -> py::bytes {
+              return junk.transformReply(replyStr);
+            },
+            "reply"_a,
+            "Takes a bytes value to send in reply and encrypts it for the original requestor.")
+        .def_property_readonly("payload",
+            [](const Junk& junk) -> py::bytes { return junk.payload; },
+            "The plaintext, decrypted data from the onion request")
+        ;
 
-    py::class_<PyJunkParser>(submod, "Parser")
-        .def(py::init<py::bytes, py::bytes>())
-        .def("parse_junk", [](const PyJunkParser& self, std::string_view stuff) -> Junk {
-          return self.Parse(std::move(stuff));
-        });
+    py::class_<JunkParser_Base>(submod, "Parser")
+        .def(py::init([](py::bytes pubkey, py::bytes privkey) {
+          x25519_keypair keys{};
+          set_key(keys.first, pubkey);
+          set_key(keys.second, privkey);
+          return JunkParser(std::move(keys));
+        }),
+        "pubkey"_a, "privkey"_a,
+        "Creates a parser that can parse and decrypt an onion request payload"
+        )
+        .def("parse_junk", [](const JunkParser_Base& self, py::bytes stuff_bytes) -> Junk {
+          Junk j;
+          {
+            std::string stuff = stuff_bytes;
+            py::gil_scoped_release gil_rel;
+            j = self.ParseJunk(stuff);
+          }
+          return j;
+        },
+        "stuff"_a,
+        "Parses and decrypts `stuff` from an onion request."
+        )
+        ;
   }
 }  // namespace onionreq
