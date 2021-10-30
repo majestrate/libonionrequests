@@ -39,7 +39,7 @@ option(WITH_JNI "build jni bindings" OFF)
 pkg_check_modules(OXENMQ liboxenmq IMPORTED_TARGET REQUIRED)
 pkg_check_modules(SODIUM libsodium IMPORTED_TARGET REQUIRED)
 pkg_check_modules(CRYPTO libcrypto IMPORTED_TARGET REQUIRED)
-pkg_check_modules(OXENC liboxenc IMPORTED_TARGET REQUIRED)
+pkg_check_modules(OXENC liboxenc>=1.0.1 IMPORTED_TARGET REQUIRED)
 pkg_check_modules(SPDLOG spdlog IMPORTED_TARGET REQUIRED)
 
 add_library(onionreq

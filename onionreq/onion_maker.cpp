@@ -2,6 +2,7 @@
 #include "key_types.hpp"
 #include "channel_encryption.hpp"
 #include <oxenc/base64.h>
+#include <oxenc/endian.h>
 #include <variant>
 #include "junk.hpp"
 
@@ -15,13 +16,8 @@ namespace onionreq
     std::string
     encode_size(uint32_t s)
     {
-      std::string str{reinterpret_cast<const char*>(&s), 4};
-#if __BYTE_ORDER == __BIG_ENDIAN
-      std::swap(str[0], str[3]);
-      std::swap(str[1], str[2]);
-#elif __BYTE_ORDER != __LITTLE_ENDIAN
-#error Unknown endianness
-#endif
+      std::string str(sizeof(s), '\0');
+      oxenc::write_host_as_little(s, str.data());
       return str;
     }
   }  // namespace
