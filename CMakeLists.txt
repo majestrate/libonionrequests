@@ -41,6 +41,8 @@ pkg_check_modules(SODIUM libsodium IMPORTED_TARGET REQUIRED)
 pkg_check_modules(CRYPTO libcrypto IMPORTED_TARGET REQUIRED)
 pkg_check_modules(OXENC liboxenc>=1.0.1 IMPORTED_TARGET REQUIRED)
 pkg_check_modules(SPDLOG spdlog IMPORTED_TARGET REQUIRED)
+find_package(nlohmann_json REQUIRED)
+
 
 add_library(onionreq
   onionreq/channel_encryption.cpp
@@ -54,7 +56,7 @@ add_library(onionreq
   onionreq/onion_maker.cpp)
 
 target_compile_options(onionreq PUBLIC -fPIC)
-target_link_libraries(onionreq PUBLIC PkgConfig::SPDLOG PkgConfig::OXENMQ PkgConfig::SODIUM PkgConfig::CRYPTO PkgConfig::OXENC)
+target_link_libraries(onionreq PUBLIC PkgConfig::SPDLOG PkgConfig::OXENMQ PkgConfig::SODIUM PkgConfig::CRYPTO nlohmann_json::nlohmann_json)
 target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 

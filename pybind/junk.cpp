@@ -1,6 +1,5 @@
 #include "common.hpp"
 #include <onionreq/junk.hpp>
-#include <pybind11/gil.h>
 #include <sodium/crypto_box.h>
 
 namespace onionreq
