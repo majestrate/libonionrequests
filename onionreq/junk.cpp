@@ -54,12 +54,12 @@ namespace onionreq
 
       Junk junk{};
 
-      ChannelEncryption d{_keys.second, _keys.first};
+      ChannelEncryption enc{_keys.second, _keys.first};
 
-      junk.payload = d.decrypt(keytype, ciphertext, remote_pk);
-      junk.transformReply =
-          [e = ChannelEncryption{_keys.second, _keys.first, false}, keytype, remote_pk](
-              std::string_view plaintext) { return e.encrypt(keytype, plaintext, remote_pk); };
+      junk.payload = enc.decrypt(keytype, ciphertext, remote_pk);
+      junk.transformReply = [enc, keytype, remote_pk](std::string_view plaintext) {
+        return enc.encrypt(keytype, plaintext, remote_pk);
+      };
       return junk;
     }
   };
