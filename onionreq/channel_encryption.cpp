@@ -176,7 +176,7 @@ namespace onionreq
     ciphertext.remove_prefix(iv.size());
 
     // We also append the tag (if applicable) so extract it:
-    if (ciphertext.size() < taglen)
+    if (ciphertext.size() < static_cast<size_t>(taglen))
       throw std::runtime_error{"Encrypted value is too short"};
     auto tag = ciphertext.substr(ciphertext.size() - taglen);
     ciphertext.remove_suffix(tag.size());
