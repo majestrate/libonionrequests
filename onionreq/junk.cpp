@@ -41,11 +41,11 @@ namespace onionreq
 
       x25519_pubkey remote_pk{};
 
-      EncryptType keytype;
+      // defaults to aes-gcm if not provided
+      EncryptType keytype{EncryptType::aes_gcm};
+
       if (auto encit = metadata.find("enc_type"); encit != metadata.end())
         keytype = parse_enc_type(encit->get<std::string_view>());
-      else
-        keytype = EncryptType::aes_gcm;
 
       if (auto itr = metadata.find("ephemeral_key"); itr != metadata.end())
         remote_pk = parse_x25519_pubkey(itr->get<std::string>());
@@ -67,6 +67,7 @@ namespace onionreq
   JunkParser_Base*
   JunkParser(SNodeInfo info, EncryptType keytype)
   {
+    // TODO: implement me
     return nullptr;
   }
 
