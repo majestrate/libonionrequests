@@ -16,7 +16,7 @@ building the library:
 
 building docs:
 
-    $ make docs
+    $ make doc
     $ python3 -m http.server -d docs/html
 
 then browse to `http://127.0.0.1:8000`
