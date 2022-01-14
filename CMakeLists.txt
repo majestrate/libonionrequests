@@ -5,7 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Has to be set before `project()`, and ignored on non-macos:
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.12 CACHE STRING "macOS deployment target (Apple clang only)")
 
-set(LANGS CXX)
+set(LANGS CXX C)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -43,6 +43,8 @@ pkg_check_modules(OXENC liboxenc>=1.0.1 IMPORTED_TARGET REQUIRED)
 pkg_check_modules(SPDLOG spdlog IMPORTED_TARGET REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
+add_subdirectory(external/libsignal-protocol-c/src/curve25519)
+
 
 add_library(onionreq
   onionreq/channel_encryption.cpp
@@ -53,11 +55,21 @@ add_library(onionreq
   onionreq/sogs_info.cpp
   onionreq/snode_info.cpp
   onionreq/transport.cpp
-  onionreq/onion_maker.cpp)
+  onionreq/onion_maker.cpp
+  onionreq/signal-xed25519.cpp)
 
 target_compile_options(onionreq PUBLIC -fPIC)
 target_link_libraries(onionreq PUBLIC PkgConfig::SPDLOG PkgConfig::OXENMQ PkgConfig::SODIUM PkgConfig::CRYPTO nlohmann_json::nlohmann_json)
 target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+set(XED_INC "")
+foreach(p "" "/additions" "/nacl_includes")
+    list(APPEND XEDDSA_INC "${CMAKE_CURRENT_SOURCE_DIR}/external/libsignal-protocol-c/src/curve25519/ed25519${p}")
+endforeach()
+set_source_files_properties(onionreq/signal-xed25519.cpp
+    PROPERTIES INCLUDE_DIRECTORIES "${XEDDSA_INC}")
+target_link_libraries(onionreq PRIVATE curve25519)
 
 
 add_subdirectory(docs)

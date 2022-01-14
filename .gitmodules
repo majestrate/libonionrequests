@@ -1,3 +1,6 @@
 [submodule "external/cpr"]
 	path = external/cpr
 	url = https://github.com/libcpr/cpr
+[submodule "libsignal-protocol-c"]
+	path = external/libsignal-protocol-c
+	url = https://github.com/signalapp/libsignal-protocol-c

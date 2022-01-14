@@ -7,6 +7,7 @@ pybind11_add_module(pyonionreq MODULE
   consensus.cpp
   transport.cpp
   junk.cpp
+  xed25519.cpp
 )
 
 target_link_libraries(pyonionreq PUBLIC onionreq)
