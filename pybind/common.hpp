@@ -20,6 +20,9 @@ namespace onionreq
   Junk_Init(py::module& mod);
 
   void
+  XEd25519_Init(py::module& mod);
+
+  void
   Common_Init(py::module& mod);
 
   template <typename T>
