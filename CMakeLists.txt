@@ -43,7 +43,7 @@ pkg_check_modules(OXENC liboxenc>=1.0.1 IMPORTED_TARGET REQUIRED)
 pkg_check_modules(SPDLOG spdlog IMPORTED_TARGET REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-add_subdirectory(libsignal-protocol-c/src/curve25519)
+add_subdirectory(external/libsignal-protocol-c/src/curve25519)
 
 
 add_library(onionreq
@@ -65,7 +65,7 @@ target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(XED_INC "")
 foreach(p "" "/additions" "/nacl_includes")
-    list(APPEND XEDDSA_INC "${CMAKE_CURRENT_SOURCE_DIR}/libsignal-protocol-c/src/curve25519/ed25519${p}")
+    list(APPEND XEDDSA_INC "${CMAKE_CURRENT_SOURCE_DIR}/external/libsignal-protocol-c/src/curve25519/ed25519${p}")
 endforeach()
 set_source_files_properties(onionreq/signal-xed25519.cpp
     PROPERTIES INCLUDE_DIRECTORIES "${XEDDSA_INC}")
