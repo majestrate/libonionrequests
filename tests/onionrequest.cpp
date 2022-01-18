@@ -198,7 +198,7 @@ main(int argc, char* argv[])
   std::string_view user_pubkey =
       "05fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210";
 
-  std::map<std::string_view, std::string_view> params{{"pubkey", user_pubkey}};
+  nlohmann::json params{{"pubkey", user_pubkey}};
   sendOnion(nlohmann::json{
       {"method", "get_snodes_for_pubkey"},
       {"ephemeral_key", user_pubkey.substr(2)},
