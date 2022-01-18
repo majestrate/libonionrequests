@@ -29,7 +29,7 @@ local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['p
         apt_get_quiet + 'update',
         apt_get_quiet + 'install -y eatmydata',
         'eatmydata ' + apt_get_quiet + 'dist-upgrade -y',
-        'eatmydata ' + apt_get_quiet + 'install -y cmake git ninja-build pkg-config ccache ' + std.join(' ', deps) + std.join(' ', compiler_deps),
+        'eatmydata ' + apt_get_quiet + 'install -y cmake git ninja-build pkg-config ccache ' + std.join(' ', deps) + ' ' + std.join(' ', compiler_deps),
         'mkdir build',
         'cd build',
         'cmake .. -DWITH_TESTS=ON -DWITH_PYBIND=ON -G Ninja -DCMAKE_CXX_FLAGS=-fdiagnostics-color=always -DCMAKE_BUILD_TYPE=' + build_type + ' -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ' + cmake_extra,
