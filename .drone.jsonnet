@@ -37,6 +37,7 @@ local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['p
         'mkdir build',
         'cd build',
         'cmake .. -DWITH_TESTS=ON -DWITH_PYBIND=ON -G Ninja -DCMAKE_CXX_FLAGS=-fdiagnostics-color=always -DCMAKE_BUILD_TYPE=' + build_type + ' -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ' + cmake_extra,
+        'ninja -v',
         'ninja -v check',
         'PYTHONPATH=pybind python3 -m pytest ../tests/'
       ] + extra_cmds,
