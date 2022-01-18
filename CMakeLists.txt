@@ -18,7 +18,7 @@ if(CCACHE_PROGRAM)
 endif()
 
 project(onionrequests
-    VERSION 0.0.1
+    VERSION 0.0.2
     DESCRIPTION "libonionrequests - onionrequests library in C++ with some nice wrappers that dont suck that much"
     LANGUAGES ${LANGS})
 
