@@ -10,7 +10,7 @@ local submodules = {
 
 local apt_get_quiet = 'apt-get -o=Dpkg::Use-Pty=0 -q ';
 
-local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['python3-pybind11', 'libspdlog-dev', 'nlohmann-json3-dev', 'libssl-dev', 'libsodium-dev', 'liboxenmq-dev', 'liboxenc-dev'], cmake_extra='', build_type='Release', extra_cmds=[], allow_fail=false) = {
+local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['python3-pybind11', 'python3-pytest', 'libspdlog-dev', 'nlohmann-json3-dev', 'libssl-dev', 'libsodium-dev', 'liboxenmq-dev', 'liboxenc-dev'], cmake_extra='', build_type='Release', extra_cmds=[], allow_fail=false) = {
   kind: 'pipeline',
   type: 'docker',
   name: name,
@@ -37,7 +37,8 @@ local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['p
         'mkdir build',
         'cd build',
         'cmake .. -DWITH_TESTS=ON -DWITH_PYBIND=ON -G Ninja -DCMAKE_CXX_FLAGS=-fdiagnostics-color=always -DCMAKE_BUILD_TYPE=' + build_type + ' -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ' + cmake_extra,
-        'ninja -v check'
+        'ninja -v check',
+        'PYTHONPATH=pybind python3 -m pytest ../tests/'
       ] + extra_cmds,
     },
   ],
