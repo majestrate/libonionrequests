@@ -1,6 +1,6 @@
 // Wrappers around libsignal's XEd25519 code for dealing with X25519 -> Ed25519 code
 
-#include "signal-xeddsa.h"
+#include "signal-xed25519.hpp"
 #include <cassert>
 #include <stdexcept>
 #include <sodium/randombytes.h>
