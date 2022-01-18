@@ -3,6 +3,7 @@
 
 c++ onion requests library with python nodejs and jvm wrapper libraries.
 
+[![Build Status](https://ci.oxen.rocks/api/badges/majestrate/libonionrequests/status.svg?ref=refs/heads/dev)](https://ci.oxen.rocks/majestrate/libonionrequests)
 
 ## usage
 
