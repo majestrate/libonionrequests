@@ -75,10 +75,6 @@ local full_llvm(version) = debian_pipeline(
   debian_pipeline('Debian stable (armhf)', docker_base + 'debian-stable/arm32v7', arch='arm64'),
   debian_pipeline('Debian buster (armhf)', docker_base + 'debian-buster/arm32v7', arch='arm64'),
   debian_pipeline('Ubuntu focal (amd64)', docker_base + 'ubuntu-focal'),
-  debian_pipeline('Ubuntu bionic (amd64)',
-                  docker_base + 'ubuntu-bionic',
-                  compiler_deps=['g++-8'],
-                  cmake_extra='-DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8'),
   {
     kind: 'pipeline',
     type: 'exec',
