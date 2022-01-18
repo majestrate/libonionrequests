@@ -10,7 +10,7 @@ local submodules = {
 
 local apt_get_quiet = 'apt-get -o=Dpkg::Use-Pty=0 -q ';
 
-local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['python3-pybind11', 'libspdlog-dev', 'nlohmann-json3-dev', 'libcrypto-dev', 'libsodium-dev', 'liboxenmq-dev', 'liboxenc-dev'], cmake_extra='', build_type='Release', extra_cmds=[], allow_fail=false) = {
+local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['python3-pybind11', 'libspdlog-dev', 'nlohmann-json3-dev', 'libssl-dev', 'libsodium-dev', 'liboxenmq-dev', 'liboxenc-dev'], cmake_extra='', build_type='Release', extra_cmds=[], allow_fail=false) = {
   kind: 'pipeline',
   type: 'docker',
   name: name,
