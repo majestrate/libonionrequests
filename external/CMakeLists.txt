@@ -27,3 +27,25 @@ target_link_libraries(cpr PUBLIC CURL::libcurl)
 target_include_directories(cpr PUBLIC cpr/include ${CMAKE_BINARY_DIR}/cpr_generated)
 target_compile_definitions(cpr PUBLIC CPR_CURL_NOSIGNAL)
 add_library(cpr::cpr ALIAS cpr)
+
+
+
+include(ExternalProject)
+ExternalProject_Add(libsodium-internal_ext
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libsodium-internal
+    BUILD_IN_SOURCE TRUE
+    CONFIGURE_COMMAND ./autogen.sh && ./configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal
+        --disable-shared --enable-static --with-pic "CC=${CMAKE_C_COMPILER}"
+    BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/lib/libsodium.a
+        ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include/sodium.h
+)
+add_library(libsodium-internal STATIC IMPORTED GLOBAL)
+add_dependencies(libsodium-internal libsodium-internal_ext)
+
+include_directories(BEFORE SYSTEM ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include)
+
+set_target_properties(libsodium-internal PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/lib/libsodium.a
+    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include
+)

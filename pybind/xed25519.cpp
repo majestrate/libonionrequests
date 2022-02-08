@@ -24,7 +24,7 @@ namespace onionreq
         return py::bytes(reinterpret_cast<const char*>(sig.data()), sig.size());
       },
       "curve25519_privkey"_a, "msg"_a,
-      "Constructs an XEd25519 signature of `msg` (max 256 bytes) using the given private key");
+      "Constructs an XEd25519 signature of `msg` using the given private key");
 
     submod.def("pubkey", [](py::bytes curve25519_pubkey) {
         auto edpk = xed25519::pubkey(uview(curve25519_pubkey));
