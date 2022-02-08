@@ -89,6 +89,7 @@ local full_llvm(version) = debian_pipeline(
         commands: [
           'mkdir build',
           'cd build',
+          'export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"',
           'cmake .. -DWITH_PYBIND=ON -DWITH_TESTS=ON -G Ninja -DCMAKE_CXX_FLAGS=-fcolor-diagnostics -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache',
           'ninja -v check',
         ],
