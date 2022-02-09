@@ -18,7 +18,7 @@ if(CCACHE_PROGRAM)
 endif()
 
 project(onionrequests
-    VERSION 0.0.2
+    VERSION 0.0.3
     DESCRIPTION "libonionrequests - onionrequests library in C++ with some nice wrappers that dont suck that much"
     LANGUAGES ${LANGS})
 
@@ -37,14 +37,12 @@ option(WITH_NODEJS "build nodejs native bindings" OFF)
 option(WITH_JNI "build jni bindings" OFF)
 
 pkg_check_modules(OXENMQ liboxenmq IMPORTED_TARGET REQUIRED)
-pkg_check_modules(SODIUM libsodium IMPORTED_TARGET REQUIRED)
 pkg_check_modules(CRYPTO libcrypto IMPORTED_TARGET REQUIRED)
 pkg_check_modules(OXENC liboxenc>=1.0.1 IMPORTED_TARGET REQUIRED)
 pkg_check_modules(SPDLOG spdlog IMPORTED_TARGET REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-add_subdirectory(external/libsignal-protocol-c/src/curve25519)
-
+add_subdirectory(external)
 
 add_library(onionreq
   onionreq/channel_encryption.cpp
@@ -59,17 +57,16 @@ add_library(onionreq
   onionreq/signal-xed25519.cpp)
 
 target_compile_options(onionreq PUBLIC -fPIC)
-target_link_libraries(onionreq PUBLIC PkgConfig::SPDLOG PkgConfig::OXENMQ PkgConfig::SODIUM PkgConfig::CRYPTO nlohmann_json::nlohmann_json)
+target_link_libraries(onionreq PUBLIC
+    PkgConfig::SPDLOG
+    PkgConfig::OXENMQ
+    PkgConfig::CRYPTO
+    nlohmann_json::nlohmann_json
+    libsodium-internal)
 target_include_directories(onionreq PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 
-set(XED_INC "")
-foreach(p "" "/additions" "/nacl_includes")
-    list(APPEND XEDDSA_INC "${CMAKE_CURRENT_SOURCE_DIR}/external/libsignal-protocol-c/src/curve25519/ed25519${p}")
-endforeach()
-set_source_files_properties(onionreq/signal-xed25519.cpp
-    PROPERTIES INCLUDE_DIRECTORIES "${XEDDSA_INC}")
-target_link_libraries(onionreq PRIVATE curve25519)
+target_link_libraries(onionreq PRIVATE libsodium-internal)
 
 
 add_subdirectory(docs)
@@ -89,6 +86,5 @@ endif()
 option(WITH_TESTS "build tests" ON)
 
 if(WITH_TESTS)
-  add_subdirectory(external)
   add_subdirectory(tests)
 endif()

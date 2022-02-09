@@ -7,7 +7,7 @@ from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 
 # Convert distutils Windows platform specifiers to CMake -A arguments

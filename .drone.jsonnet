@@ -39,7 +39,7 @@ local debian_pipeline(name, image, arch='amd64', compiler_deps=['g++'], deps=['p
         'cmake .. -DWITH_TESTS=ON -DWITH_PYBIND=ON -G Ninja -DCMAKE_CXX_FLAGS=-fdiagnostics-color=always -DCMAKE_BUILD_TYPE=' + build_type + ' -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ' + cmake_extra,
         'ninja -v',
         'ninja -v check',
-        'PYTHONPATH=pybind python3 -m pytest ../tests/'
+        'PYTHONPATH=pybind python3 -m pytest ../tests/',
       ] + extra_cmds,
     },
   ],
@@ -61,7 +61,7 @@ local full_llvm(version) = debian_pipeline(
               ' -DCMAKE_CXX_FLAGS=-stdlib=libc++ ' +
               std.join(' ', [
                 '-DCMAKE_' + type + '_LINKER_FLAGS=-fuse-ld=lld-' + version
-                for type in ['EXE', 'MODULE', 'SHARED', 'STATIC']
+                for type in ['EXE', 'MODULE', 'SHARED']
               ])
 );
 
@@ -70,13 +70,12 @@ local full_llvm(version) = debian_pipeline(
   debian_pipeline('Debian sid (amd64)', docker_base + 'debian-sid'),
   debian_pipeline('Debian sid/Debug (amd64)', docker_base + 'debian-sid', build_type='Debug'),
   clang(13),
-  full_llvm(13),
-  debian_pipeline('Debian buster (amd64)', docker_base + 'debian-buster'),
+  //full_llvm(13),  // Fails at using ar when linking for some reason
+  debian_pipeline('Debian bullseye (amd64)', docker_base + 'debian-bullseye'),
   debian_pipeline('Debian stable (i386)', docker_base + 'debian-stable/i386'),
   debian_pipeline('Debian sid (ARM64)', docker_base + 'debian-sid', arch='arm64'),
   debian_pipeline('Debian stable (armhf)', docker_base + 'debian-stable/arm32v7', arch='arm64'),
-  debian_pipeline('Debian buster (armhf)', docker_base + 'debian-buster/arm32v7', arch='arm64'),
-  debian_pipeline('Ubuntu focal (amd64)', docker_base + 'ubuntu-focal'),
+  //debian_pipeline('Ubuntu focal (amd64)', docker_base + 'ubuntu-focal'),
   {
     kind: 'pipeline',
     type: 'exec',
@@ -90,8 +89,9 @@ local full_llvm(version) = debian_pipeline(
         commands: [
           'mkdir build',
           'cd build',
+          'export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"',
           'cmake .. -DWITH_PYBIND=ON -DWITH_TESTS=ON -G Ninja -DCMAKE_CXX_FLAGS=-fcolor-diagnostics -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache',
-          'ninja -v check'
+          'ninja -v check',
         ],
       },
     ],
