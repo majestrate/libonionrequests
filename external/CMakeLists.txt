@@ -42,10 +42,9 @@ ExternalProject_Add(libsodium-internal_ext
 add_library(libsodium-internal STATIC IMPORTED GLOBAL)
 add_dependencies(libsodium-internal libsodium-internal_ext)
 
-include_directories(BEFORE SYSTEM ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include)
 
 set_target_properties(libsodium-internal PROPERTIES
     IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/lib/libsodium.a
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include
 )
+target_include_directories(libsodium-internal SYSTEM BEFORE INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/libsodium-internal/include)
